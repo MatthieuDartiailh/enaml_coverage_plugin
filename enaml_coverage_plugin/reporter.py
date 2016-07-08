@@ -31,8 +31,8 @@ class EnamlFileReporter(FileReporter):
 
     """
 
-    def __init__(self, morf, coverage=None):
-        self.coverage = coverage
+    def __init__(self, morf):
+#        self.coverage = coverage
 
         if hasattr(morf, '__file__'):
             filename = morf.__file__
@@ -71,7 +71,7 @@ class EnamlFileReporter(FileReporter):
         if self._parser is None:
             self._parser = EnamlParser(
                 filename=self.filename,
-                exclude=self.coverage._exclude_regex('exclude'),
+#                exclude=self.coverage._exclude_regex('exclude'),
             )
             self._parser.parse_source()
         return self._parser
@@ -93,8 +93,8 @@ class EnamlFileReporter(FileReporter):
     @expensive
     def no_branch_lines(self):
         no_branch = self.parser.lines_matching(
-            join_regex(self.coverage.config.partial_list),
-            join_regex(self.coverage.config.partial_always_list)
+#            join_regex(self.coverage.config.partial_list),
+#            join_regex(self.coverage.config.partial_always_list)
             )
         return no_branch
 

@@ -18,11 +18,15 @@ import sys
 
 from atom.api import Typed
 from enaml.core.enaml_ast import ASTVisitor, PythonModule
-from enaml.core.parsing import parse
 from enaml.core.enaml_compiler import EnamlCompiler
 from coverage.parser import PythonParser, AstArcAnalyzer, ByteParser
 from coverage.misc import contract, NotPython, nice_pair
 from coverage.phystokens import neuter_encoding_declaration
+
+try:
+    from enaml.core.parsing import parse
+except ImportError:
+    from enaml.core.parser import parse
 
 if sys.version_info >= (3, 5):
     from enaml.core.parsing.lexer3 import Python35EnamlLexer
@@ -33,8 +37,12 @@ elif sys.version_info >= (3, 4):
 elif sys.version_info >= (3, 0):
     raise Exception('Unsupported Python version')
 else:
-    from enaml.core.parsing.lexer2 import Python2EnamlLexer
-    lexer = Python2EnamlLexer()
+    try:
+        from enaml.core.parsing.lexer2 import Python2EnamlLexer
+        lexer = Python2EnamlLexer()
+    except ImportError:
+        from enaml.core.lexer import EnamlLexer
+        lexer = EnamlLexer()
 
 
 class NotEnaml(NotPython):
@@ -119,7 +127,7 @@ class EnamlParser(PythonParser):
         exclude_indent = 0
         excluding = False
         excluding_decorators = False
-        prev_toktype = lexer.indent()
+        prev_toktype = lexer.indent(1)
         first_line = None
         empty = True
         first_on_line = True
@@ -218,7 +226,8 @@ class EnamlParser(PythonParser):
         """
         aaa = EnamlASTArcAnalyser(self.text, self.raw_statements,
                                   self._multiline)
-        aaa.analyze()
+
+        EnamlASTVisitor(arc_analyser=aaa).visit(aaa.root_node)
 
         self._all_arcs = set()
         for l1, l2 in aaa.arcs:
@@ -251,11 +260,11 @@ class EnamlASTArcAnalyser(AstArcAnalyzer):
 
         self.debug = bool(int(os.environ.get("COVERAGE_TRACK_ARCS", 0)))
 
-    def analyse(self):
+    def analyse_enaml(self):
         """Visit the AST to determine the covered arcs.
 
         """
-        EnamlASTVisitor(arc_analyser=self).visit(self.root_node)
+        pass
 
 
 class EnamlASTVisitor(ASTVisitor):

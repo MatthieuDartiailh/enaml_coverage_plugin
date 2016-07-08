@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+# -----------------------------------------------------------------------------
+# Copyright 2016 by Enaml coverage Authors, see AUTHORS for more details.
+#
+# Distributed under the terms of the BSD license.
+#
+# The full license is in the file LICENCE, distributed with this software.
+# -----------------------------------------------------------------------------
+"""Simple enaml file providing tests cases.
+
+"""
+from __future__ import (division, unicode_literals, print_function,
+                        absolute_import)
+
+from enaml.widgets.api import Window, Container, PushButton
+
+
+enamldef Main(Window):
+    """Window with a single button.
+
+    """
+    attr should_answer : bool = True
+
+    alias btn_enabled : btn.enabled
+
+    func answer():
+        print('Clicked received')
+
+    Container:
+        PushButton: btn:
+            text = 'Click me'
+            clicked ::
+                if should_answer:
+                    answer()
+                else:
+                    print('Click not received')
+                a = 1
