@@ -69,7 +69,10 @@ class EnamlFileReporter(FileReporter):
     def parser(self):
         """Lazily create a :class:`PythonParser`."""
         if self._parser is None:
+            with open(self.filename, 'rU') as src_file:
+                src = src_file.read()
             self._parser = EnamlParser(
+                text=src,
                 filename=self.filename,
 #                exclude=self.coverage._exclude_regex('exclude'),
             )

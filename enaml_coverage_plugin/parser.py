@@ -56,7 +56,6 @@ class EnamlByteParser(ByteParser):
     """Byte parser modified for handling enaml files.
 
     """
-    @contract(text='unicode')
     def __init__(self, text, code=None, filename=None):
         self.text = text
         if code:
