@@ -143,7 +143,8 @@ class EnamlParser(PythonParser):
                 if tok is None:
                     break
                 if tok.type == 'STRING':
-                    length = tok.value.count('\n')
+                    # HINT use a string when counting to avoid encoding issues.
+                    length = tok.value.count(str('\n'))
                 yield (tok.type, tok.value, (tok.lineno, 0),
                        (tok.lineno + length, 0), '')
 

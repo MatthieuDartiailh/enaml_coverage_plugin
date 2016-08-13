@@ -18,6 +18,8 @@ from enaml.widgets.api import Window, Container, PushButton
 enamldef Main(Window):
     """Window with a single button.
 
+    Test handling non ASCII : é
+
     """
     attr should_answer : bool = True
 
