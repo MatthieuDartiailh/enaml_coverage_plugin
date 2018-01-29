@@ -23,22 +23,22 @@ from coverage.parser import PythonParser, AstArcAnalyzer, ByteParser
 from coverage.misc import contract, NotPython, nice_pair
 from coverage.phystokens import neuter_encoding_declaration
 
-try:
-    from enaml.core.parsing import parse
-except ImportError:
-    from enaml.core.parser import parse
+from enaml.core.parser import parse
 
-if sys.version_info >= (3, 5):
-    from enaml.core.parsing.lexer3 import Python35EnamlLexer
+if sys.version_info >= (3, 6):
+    from enaml.core.parser.lexer3 import Python36EnamlLexer
+    lexer = Python36EnamlLexer()
+elif sys.version_info >= (3, 5):
+    from enaml.core.parser.lexer3 import Python35EnamlLexer
     lexer = Python35EnamlLexer()
 elif sys.version_info >= (3, 4):
-    from enaml.core.parsing.lexer3 import Python34EnamlLexer
+    from enaml.core.parser.lexer3 import Python34EnamlLexer
     lexer = Python34EnamlLexer()
 elif sys.version_info >= (3, 0):
     raise Exception('Unsupported Python version')
 else:
     try:
-        from enaml.core.parsing.lexer2 import Python2EnamlLexer
+        from enaml.core.parser.lexer2 import Python2EnamlLexer
         lexer = Python2EnamlLexer()
     except ImportError:
         from enaml.core.lexer import EnamlLexer
