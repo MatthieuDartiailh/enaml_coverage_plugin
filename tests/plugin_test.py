@@ -1,24 +1,18 @@
-# -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
-# Copyright 2016 by Enaml coverage Authors, see AUTHORS for more details.
+# Copyright 2016-2021 by Enaml coverage Authors, see AUTHORS for more details.
 #
 # Distributed under the terms of the BSD license.
 #
 # The full license is in the file LICENCE, distributed with this software.
 # -----------------------------------------------------------------------------
-"""Tools for testing th eplugin providing coverage measurement for enaml files.
+"""Tools for testing the plugin providing coverage measurement for enaml files.
 
 """
-from __future__ import (division, unicode_literals, print_function,
-                        absolute_import)
-
 import contextlib
 import os
 import os.path
 
 from unittest import TestCase
-
-#from unittest_mixins import StdStreamCapturingMixin
 
 import coverage
 
@@ -61,10 +55,10 @@ class EnamlPluginTestCase(TestCase):
         self.cov.stop()
         self.cov.save()
         # Warning! Accessing secret internals!
-        for pl in self.cov.plugins:
-            if isinstance(pl, EnamlCoveragePlugin):
-                if not pl._coverage_enabled:
-                    raise PluginDisabled()
+        # for pl in self.cov.plugins:
+        #     if isinstance(pl, EnamlCoveragePlugin):
+        #         if not pl._coverage_enabled:
+        #             raise PluginDisabled()
 
     def append_config(self, option, value):
         """Append to a configuration option."""
@@ -79,7 +73,7 @@ class EnamlPluginTestCase(TestCase):
             list: the line numbers of lines executed in the template.
 
         """
-        return self.cov.data.lines(os.path.realpath(path))
+        return self.cov.get_data().lines(os.path.realpath(path))
 
     def get_analysis(self, path):
         """Get the coverage analysis for an enaml file.
@@ -95,7 +89,7 @@ class EnamlPluginTestCase(TestCase):
 
     def measured_files(self):
         """Get the list of measured files, in relative form."""
-        return [os.path.relpath(f) for f in self.cov.data.measured_files()]
+        return [os.path.relpath(f) for f in self.cov.get_data().measured_files()]
 
     def assert_analysis(self, executable, missing=None, name=None):
         """Assert that the analysis for `name` is right."""

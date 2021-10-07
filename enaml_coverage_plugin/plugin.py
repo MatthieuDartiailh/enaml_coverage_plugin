@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
-# Copyright 2016 by Enaml coverage Authors, see AUTHORS for more details.
+# Copyright 2016-2021 by Enaml coverage Authors, see AUTHORS for more details.
 #
 # Distributed under the terms of the BSD license.
 #
@@ -9,43 +8,30 @@
 """Plugin providing coverage support for enaml files.
 
 """
-from __future__ import (division, unicode_literals, print_function,
-                        absolute_import)
-
-
 from coverage import CoveragePlugin, FileTracer
 
 from .reporter import EnamlFileReporter
 
 
 class EnamlCoveragePlugin(CoveragePlugin):
-    """Coverage plugin for enaml files.
+    """Coverage plugin for enaml files."""
 
-    """
-
-    def file_tracer(self, filename):
-        """Create a file tracer for each discovered enaml file.
-
-        """
-        if filename.endswith('.enaml'):
+    def file_tracer(self, filename: str) -> "EnamlFileTracer":
+        """Create a file tracer for each discovered enaml file."""
+        if filename.endswith(".enaml"):
             return EnamlFileTracer(filename)
 
-    def file_reporter(self, filename):
-        """Create afile reporter for a given filename.
-
-        """
+    def file_reporter(self, filename) -> EnamlFileReporter:
+        """Create a file reporter for a given filename."""
         return EnamlFileReporter(filename)
 
 
 class EnamlFileTracer(FileTracer):
-    """Tracer used to trace enaml file execution.
+    """Tracer used to trace enaml file execution."""
 
-    """
-    def __init__(self, filename):
+    def __init__(self, filename: str):
         self._filename = filename
 
     def source_filename(self):
-        """Return the filename passed as creation.
-
-        """
-        return self ._filename
+        """Return the filename passed as creation."""
+        return self._filename
