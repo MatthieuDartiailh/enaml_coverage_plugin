@@ -14,33 +14,24 @@ from .reporter import EnamlFileReporter
 
 
 class EnamlCoveragePlugin(CoveragePlugin):
-    """Coverage plugin for enaml files.
-
-    """
+    """Coverage plugin for enaml files."""
 
     def file_tracer(self, filename: str) -> "EnamlFileTracer":
-        """Create a file tracer for each discovered enaml file.
-
-        """
-        if filename.endswith('.enaml'):
+        """Create a file tracer for each discovered enaml file."""
+        if filename.endswith(".enaml"):
             return EnamlFileTracer(filename)
 
     def file_reporter(self, filename) -> EnamlFileReporter:
-        """Create a file reporter for a given filename.
-
-        """
+        """Create a file reporter for a given filename."""
         return EnamlFileReporter(filename)
 
 
 class EnamlFileTracer(FileTracer):
-    """Tracer used to trace enaml file execution.
+    """Tracer used to trace enaml file execution."""
 
-    """
     def __init__(self, filename: str):
         self._filename = filename
 
     def source_filename(self):
-        """Return the filename passed as creation.
-
-        """
+        """Return the filename passed as creation."""
         return self._filename

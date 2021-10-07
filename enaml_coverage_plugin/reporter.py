@@ -13,8 +13,10 @@ import types
 from typing import Set, Tuple
 
 from coverage import files
-from coverage.misc import (contract, CoverageException, expensive,
-                           join_regex, isolate_module)
+from coverage.misc import (
+    CoverageException,
+    isolate_module,
+)
 from coverage.plugin import FileReporter
 from coverage.python import get_python_source
 
@@ -24,13 +26,11 @@ os = isolate_module(os)
 
 
 class EnamlFileReporter(FileReporter):
-    """Enaml file reporter.
-
-    """
+    """Enaml file reporter."""
 
     def __init__(self, morf):
 
-        if hasattr(morf, '__file__'):
+        if hasattr(morf, "__file__"):
             filename = morf.__file__
         elif isinstance(morf, types.ModuleType):
             # A module should have had .__file__, otherwise we can't use it.
@@ -41,10 +41,9 @@ class EnamlFileReporter(FileReporter):
 
         filename = files.unicode_filename(filename)
 
-        super(EnamlFileReporter,
-              self).__init__(files.canonical_filename(filename))
+        super(EnamlFileReporter, self).__init__(files.canonical_filename(filename))
 
-        if hasattr(morf, '__name__'):
+        if hasattr(morf, "__name__"):
             name = morf.__name__
             name = name.replace(".", os.sep) + ".enaml"
             name = files.unicode_filename(name)
@@ -64,12 +63,12 @@ class EnamlFileReporter(FileReporter):
     def parser(self) -> EnamlParser:
         """Lazily create a parser."""
         if self._parser is None:
-            with open(self.filename, 'r') as src_file:
+            with open(self.filename, "r") as src_file:
                 src = src_file.read()
             self._parser = EnamlParser(
                 text=src,
                 filename=self.filename,
-#                exclude=self.coverage._exclude_regex('exclude'),
+                #                exclude=self.coverage._exclude_regex('exclude'),
             )
             self._parser.parse_source()
         return self._parser
@@ -123,7 +122,9 @@ class EnamlFileReporter(FileReporter):
         """Get a count of exits from that each line."""
         return self.parser.exit_counts()
 
-    def missing_arc_description(self, start: int, end: int, executed_arcs: Set[Tuple[int, int]]=None) -> str:
+    def missing_arc_description(
+        self, start: int, end: int, executed_arcs: Set[Tuple[int, int]] = None
+    ) -> str:
         """Provide an English sentence describing a missing arc."""
         return self.parser.missing_arc_description(start, end, executed_arcs)
 

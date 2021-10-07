@@ -10,9 +10,9 @@
 
 """
 
-def coverage_init(reg, options):
-    """Register the enaml plugin.
 
-    """
+def coverage_init(reg, options):
+    """Register the enaml plugin."""
     from .plugin import EnamlCoveragePlugin
+
     reg.add_file_tracer(EnamlCoveragePlugin())
