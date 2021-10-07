@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
-# Copyright 2016 by Enaml coverage Authors, see AUTHORS for more details.
+# Copyright 2016-2021 by Enaml coverage Authors, see AUTHORS for more details.
 #
 # Distributed under the terms of the BSD license.
 #
@@ -9,40 +8,25 @@
 """Plugin providing coverage support for enaml files.
 
 """
-from __future__ import (division, unicode_literals, print_function,
-                        absolute_import)
-
 import collections
 import os
 import sys
+import types
+from typing import Optional
 
 from atom.api import Typed
+from coverage.misc import NotPython, contract, nice_pair
+from coverage.parser import AstArcAnalyzer, ByteParser, PythonParser
+from coverage.phystokens import neuter_encoding_declaration
 from enaml.core.enaml_ast import ASTVisitor, PythonModule
 from enaml.core.enaml_compiler import EnamlCompiler
-from coverage.parser import PythonParser, AstArcAnalyzer, ByteParser
-from coverage.misc import contract, NotPython, nice_pair
-from coverage.phystokens import neuter_encoding_declaration
-
 from enaml.core.parser import parse
 
-if sys.version_info >= (3, 6):
-    from enaml.core.parser.lexer3 import Python36EnamlLexer
-    lexer = Python36EnamlLexer()
-elif sys.version_info >= (3, 5):
-    from enaml.core.parser.lexer3 import Python35EnamlLexer
-    lexer = Python35EnamlLexer()
-elif sys.version_info >= (3, 4):
-    from enaml.core.parser.lexer3 import Python34EnamlLexer
-    lexer = Python34EnamlLexer()
-elif sys.version_info >= (3, 0):
-    raise Exception('Unsupported Python version')
+if sys.version_info >= (3, 7):
+    from enaml.core.parser.lexer3 import Python37EnamlLexer
+    lexer = Python37EnamlLexer()
 else:
-    try:
-        from enaml.core.parser.lexer2 import Python2EnamlLexer
-        lexer = Python2EnamlLexer()
-    except ImportError:
-        from enaml.core.lexer import EnamlLexer
-        lexer = EnamlLexer()
+    raise Exception('Unsupported Python version')
 
 
 class NotEnaml(NotPython):
@@ -56,7 +40,7 @@ class EnamlByteParser(ByteParser):
     """Byte parser modified for handling enaml files.
 
     """
-    def __init__(self, text, code=None, filename=None):
+    def __init__(self, text: str, code: Optional[types.CodeType]=None, filename: Optional[str]=None) -> None:
         self.text = text
         if code:
             self.code = code
@@ -77,14 +61,14 @@ class EnamlParser(PythonParser):
     """
 
     @property
-    def byte_parser(self):
+    def byte_parser(self) -> EnamlByteParser:
         """Create a ByteParser on demand."""
         if not self._byte_parser:
             self._byte_parser = EnamlByteParser(self.text,
                                                 filename=self.filename)
         return self._byte_parser
 
-    def parse_source(self):
+    def parse_source(self) -> None:
         """Parse source text to find executable lines, excluded lines, etc.
 
         Sets the .excluded and .statements attributes, normalized to the first
@@ -110,7 +94,7 @@ class EnamlParser(PythonParser):
         starts = self.raw_statements - ignore
         self.statements = self.first_lines(starts) - ignore
 
-    def _raw_parse(self):
+    def _raw_parse(self) -> None:
         """Parse the source to find the interesting facts about its lines.
 
         A handful of attributes are updated.
@@ -218,7 +202,7 @@ class EnamlParser(PythonParser):
         if not empty:
             self.raw_statements.update(self.byte_parser._find_statements())
 
-    def _analyze_ast(self):
+    def _analyze_ast(self) -> None:
         """Run the AstArcAnalyzer and save its results.
 
         `_all_arcs` is the set of arcs in the code.
@@ -243,8 +227,7 @@ class EnamlASTArcAnalyser(AstArcAnalyzer):
     """Custom ast analyser modified to handle enaml ast.
 
     """
-    @contract(text='unicode', statements=set)
-    def __init__(self, text, statements, multiline):
+    def __init__(self, text: str, statements: set, multiline) -> None:
         self.root_node = parse(neuter_encoding_declaration(text))
         self.statements = set(multiline.get(l, l) for l in statements)
         self.multiline = multiline
@@ -259,12 +242,6 @@ class EnamlASTArcAnalyser(AstArcAnalyzer):
         self.block_stack = []
 
         self.debug = bool(int(os.environ.get("COVERAGE_TRACK_ARCS", 0)))
-
-    def analyse_enaml(self):
-        """Visit the AST to determine the covered arcs.
-
-        """
-        pass
 
 
 class EnamlASTVisitor(ASTVisitor):

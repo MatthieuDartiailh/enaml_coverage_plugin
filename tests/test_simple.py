@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
-# Copyright 2016 by Enaml coverage Authors, see AUTHORS for more details.
+# Copyright 2016-2021 by Enaml coverage Authors, see AUTHORS for more details.
 #
 # Distributed under the terms of the BSD license.
 #
@@ -9,13 +8,16 @@
 """Plugin providing coverage support for enaml files.
 
 """
-from __future__ import (division, unicode_literals, print_function,
-                        absolute_import)
+import pathlib
 
+import coverage
 import enaml
+from enaml.core.parser import parse
+from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.qt.qt_application import QtApplication
+from enaml.widgets.api import Window
 
-from .plugin_test import EnamlPluginTestCase
+from plugin_test import EnamlPluginTestCase
 
 
 def process_app_events():
@@ -34,44 +36,78 @@ def process_app_events():
 # TODO find a way to access the main object config.
 class TestSimpleEnaml(EnamlPluginTestCase):
 
-    def test_no_interaction(self):
+    def load_module_main(self, module_name: str) -> Window:
+        path = pathlib.Path(__file__).parent / "data" / module_name
+        with open(path) as f:
+            source = f.read()
+        ast = parse(source, str(path))
+        code = EnamlCompiler.compile(ast, str(path))
+        globs = {}
+        with enaml.imports():
+            exec(code, globs)
+        return globs["Main"]
 
+    def test_plugin_loaded(self):
+        self.cov = coverage.Coverage()
+        self.cov.set_option("run:plugins", ["enaml_coverage_plugin"])
+        import enaml_coverage_plugin
+
+        proof = False
+
+        def temp(reg, options):
+            nonlocal proof
+            proof = True
+
+        old = enaml_coverage_plugin.coverage_init
+        enaml_coverage_plugin.coverage_init = temp
+
+        try:
+            self.cov.start()
+            self.cov.stop()
+        finally:
+            enaml_coverage_plugin.coverage_init = old
+
+        assert proof
+
+    def test_no_interaction(self):
         def create_and_show():
-            with enaml.imports():
-                from .enaml.test_simple import Main
-                w = Main()
-                w.show()
-                process_app_events()
-                w.close()
+            Main = self.load_module_main("test_simple.enaml")
+            w = Main()
+            w.show()
+            process_app_events()
+            w.close()
 
         self.run_enaml_coverage(create_and_show)
         print(self.measured_files())
-        ex, missed = self.get_analysis('tests/enaml/test_simple.enaml')
-        print('executable_lines: %s' % ex)
-        print('missed lines: %s' % missed)
-        print('executed lines: %s' %
-              self.get_line_data('tests/enaml/test_simple.enaml'))
-        assert False
+        ex, missed = self.get_analysis("tests/data/test_simple.enaml")
+        executed = self.get_line_data("tests/data/test_simple.enaml")
+        print("executable_lines: %s" % ex)
+        print("missed lines: %s" % missed)
+        print(
+            "executed lines: %s" % self.get_line_data("tests/data/test_simple.enaml")
+        )
+        assert set(ex) == (set(missed) | set(executed))
+        for l in (25, 31, 32, 34):  # FIXME 35 should be in but is not
+            assert l in missed
 
     def test_with_interaction(self):
-
         def create_and_show():
-            with enaml.imports():
-                from .enaml.test_simple import Main
-                w = Main()
-                w.show()
-                process_app_events()
-                btn = w.central_widget().widgets()[-1]
-                btn.clicked = True
-                w.should_answer = False
-                btn.clicked = True
-                w.close()
+            Main = self.load_module_main("test_simple.enaml")
+            w = Main()
+            w.show()
+            process_app_events()
+            btn = w.central_widget().widgets()[-1]
+            btn.clicked = True
+            w.should_answer = False
+            btn.clicked = True
+            w.close()
 
         self.run_enaml_coverage(create_and_show)
         print(self.measured_files())
-        ex, missed = self.get_analysis('tests/enaml/test_simple.enaml')
-        print('executable_lines: %s' % ex)
-        print('missed lines: %s' % missed)
-        print('executed lines: %s' %
-              self.get_line_data('tests/enaml/test_simple.enaml'))
-        assert False
+        ex, missed = self.get_analysis("tests/data/test_simple.enaml")
+        print("executable_lines: %s" % ex)
+        print("missed lines: %s" % missed)
+        print(
+            "executed lines: %s" % self.get_line_data("tests/data/test_simple.enaml")
+        )
+        assert not missed
