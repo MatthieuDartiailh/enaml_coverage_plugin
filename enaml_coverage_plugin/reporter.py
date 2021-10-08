@@ -13,10 +13,7 @@ import types
 from typing import Set, Tuple
 
 from coverage import files
-from coverage.misc import (
-    CoverageException,
-    isolate_module,
-)
+from coverage.misc import CoverageException, isolate_module
 from coverage.plugin import FileReporter
 from coverage.python import get_python_source
 
