@@ -183,8 +183,8 @@ class EnamlParser(PythonParser):
                     # We're at the end of a line, and we've ended on a
                     # different line than the first line of the statement,
                     # so record a multi-line range.
-                    for l in range(first_line, elineno + 1):
-                        self._multiline[l] = first_line
+                    for line_number in range(first_line, elineno + 1):
+                        self._multiline[line_number] = first_line
                 first_line = None
                 first_on_line = True
 
@@ -233,7 +233,9 @@ class EnamlASTArcAnalyser(AstArcAnalyzer):
 
     def __init__(self, text: str, statements: set, multiline) -> None:
         self.root_node = parse(neuter_encoding_declaration(text))
-        self.statements = set(multiline.get(l, l) for l in statements)
+        self.statements = set(
+            multiline.get(line_number, line_number) for line_number in statements
+        )
         self.multiline = multiline
 
         self.arcs = set()
