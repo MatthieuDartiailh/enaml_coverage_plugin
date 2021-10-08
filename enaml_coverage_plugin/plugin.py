@@ -9,6 +9,7 @@
 
 """
 from typing import Optional
+
 from coverage import CoveragePlugin, FileTracer
 
 from .reporter import EnamlFileReporter
