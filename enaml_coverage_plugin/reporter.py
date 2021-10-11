@@ -13,10 +13,7 @@ import types
 from typing import Set, Tuple
 
 from coverage import files
-from coverage.misc import (
-    CoverageException,
-    isolate_module,
-)
+from coverage.misc import CoverageException, isolate_module
 from coverage.plugin import FileReporter
 from coverage.python import get_python_source
 
@@ -38,8 +35,6 @@ class EnamlFileReporter(FileReporter):
             raise CoverageException("Module {0} has no file".format(morf))
         else:
             filename = morf
-
-        filename = files.unicode_filename(filename)
 
         super(EnamlFileReporter, self).__init__(files.canonical_filename(filename))
 

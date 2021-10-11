@@ -12,11 +12,18 @@ import collections
 import os
 import sys
 import types
-from typing import Optional
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 from atom.api import Typed
 from coverage.misc import NotPython, nice_pair
-from coverage.parser import AstArcAnalyzer, ByteParser, PythonParser
+from coverage.parser import (
+    AstArcAnalyzer,
+    ByteParser,
+    FunctionBlock,
+    LoopBlock,
+    PythonParser,
+    TryBlock,
+)
 from coverage.phystokens import neuter_encoding_declaration
 from enaml.core.enaml_ast import ASTVisitor, PythonModule
 from enaml.core.enaml_compiler import EnamlCompiler
@@ -53,18 +60,22 @@ class EnamlByteParser(ByteParser):
                 self.code = EnamlCompiler.compile(parse(text), filename)
             except SyntaxError as synerr:
                 raise NotPython(
-                    u"Couldn't parse '%s' as Enaml source: '%s' at line %d"
-                    % (filename, synerr.msg, synerr.lineno)
+                    f"Couldn't parse '{filename}' as Enaml source: "
+                    f"'{synerr.msg}' at line {synerr.lineno}"
                 )
 
 
 class EnamlParser(PythonParser):
     """Enaml parser analyser based on a custom arc analysis."""
 
+    def __init__(self, text=None, filename=None, exclude=None):
+        super().__init__(text=text, filename=filename, exclude=exclude)
+        self._byte_parser = None
+
     @property
     def byte_parser(self) -> EnamlByteParser:
         """Create a ByteParser on demand."""
-        if not self._byte_parser:
+        if self._byte_parser is None:
             self._byte_parser = EnamlByteParser(self.text, filename=self.filename)
         return self._byte_parser
 
@@ -83,8 +94,8 @@ class EnamlParser(PythonParser):
             else:
                 lineno = err.args[1][0]  # TokenError
             raise NotEnaml(
-                u"Couldn't parse '%s' as Enaml source: '%s' at line %d"
-                % (self.filename, err.args[0], lineno)
+                f"Couldn't parse '{self.filename}' as Enaml source: "
+                f"'{err.args[0]}' at line {lineno}"
             )
 
         self.excluded = self.first_lines(self.raw_excluded)
@@ -92,6 +103,10 @@ class EnamlParser(PythonParser):
         ignore = self.excluded | self.raw_docstrings
         starts = self.raw_statements - ignore
         self.statements = self.first_lines(starts) - ignore
+
+    # --- Private API
+
+    _byte_parser: Optional[EnamlByteParser]
 
     def _raw_parse(self) -> None:
         """Parse the source to find the interesting facts about its lines.
@@ -183,8 +198,8 @@ class EnamlParser(PythonParser):
                     # We're at the end of a line, and we've ended on a
                     # different line than the first line of the statement,
                     # so record a multi-line range.
-                    for l in range(first_line, elineno + 1):
-                        self._multiline[l] = first_line
+                    for line_number in range(first_line, elineno + 1):
+                        self._multiline[line_number] = first_line
                 first_line = None
                 first_on_line = True
 
@@ -233,17 +248,22 @@ class EnamlASTArcAnalyser(AstArcAnalyzer):
 
     def __init__(self, text: str, statements: set, multiline) -> None:
         self.root_node = parse(neuter_encoding_declaration(text))
-        self.statements = set(multiline.get(l, l) for l in statements)
+        self.statements = set(
+            multiline.get(line_number, line_number) for line_number in statements
+        )
         self.multiline = multiline
 
-        self.arcs = set()
+        self.arcs: Set[Tuple[int, int]] = set()
 
-        # A map from arc pairs to a pair of sentence fragments:
-        #     (startmsg, endmsg).
+        # A map from arc pairs to a list of pairs of sentence fragments:
+        #   { (start, end): [(startmsg, endmsg), ...], }
+        #
         # For an arc from line 17, they should be usable like:
         #    "Line 17 {endmsg}, because {startmsg}"
-        self.missing_arc_fragments = collections.defaultdict(list)
-        self.block_stack = []
+        self.missing_arc_fragments: Dict[
+            Tuple[int, int], List[Tuple[str, str]]
+        ] = collections.defaultdict(list)
+        self.block_stack: List[Union[TryBlock, FunctionBlock, LoopBlock]] = []
 
         self.debug = bool(int(os.environ.get("COVERAGE_TRACK_ARCS", 0)))
 
