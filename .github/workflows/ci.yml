@@ -65,8 +65,8 @@ jobs:
       # Manually install qt backend for enaml
       # (but not enaml to check the plugin does install it)
         run: |
-          pip install pytest-cov pytest-qt pyqt5 qtpy
-          python -X dev -m pytest tests --cov enaml_coverage_plugin --cov-report xml -v
+          pip install pytest-qt pyqt5 qtpy
+          python -X dev -m pytest tests -v
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
