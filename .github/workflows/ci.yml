@@ -67,8 +67,9 @@ jobs:
         run: |
           pip install pytest-qt pyqt5 qtpy
           python -X dev -m pytest tests -v
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          name: codecov-umbrella
-          fail_ci_if_error: true
+      # Measuring coverage for coverage plugin is non trivial and I need more tests
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     name: codecov-umbrella
+      #     fail_ci_if_error: true

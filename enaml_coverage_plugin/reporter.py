@@ -36,8 +36,6 @@ class EnamlFileReporter(FileReporter):
         else:
             filename = morf
 
-        filename = files.unicode_filename(filename)
-
         super(EnamlFileReporter, self).__init__(files.canonical_filename(filename))
 
         if hasattr(morf, "__name__"):

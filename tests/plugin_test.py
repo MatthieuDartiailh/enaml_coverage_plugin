@@ -28,23 +28,24 @@ class EnamlPluginTestCase(TestCase):
         super(EnamlPluginTestCase, self).setUp()
         if Application.instance() is None:
             from enaml.qt.qt_application import QtApplication
+
             self.app = QtApplication()
 
     def run_enaml_coverage(self, enaml_exec, options=None):
         """Run an enaml file under coverage.
 
-       enaml_exec is a callable taking no argument and running some test on an
-       enaml file.
+        enaml_exec is a callable taking no argument and running some test on an
+        enaml file.
 
-        If `options` is provided, they are kwargs for the Coverage
-        constructor, which default to source=["."].
+         If `options` is provided, they are kwargs for the Coverage
+         constructor, which default to source=["."].
 
-        Returns:
-            str: the text produced by the template.
+         Returns:
+             str: the text produced by the template.
 
         """
         if options is None:
-            options = {'source': ["."], 'branch': True}
+            options = {"source": ["."], "branch": True}
 
         self.cov = coverage.Coverage(**options)
         self.append_config("run:plugins", "enaml_coverage_plugin")
@@ -54,11 +55,6 @@ class EnamlPluginTestCase(TestCase):
         enaml_exec()
         self.cov.stop()
         self.cov.save()
-        # Warning! Accessing secret internals!
-        # for pl in self.cov.plugins:
-        #     if isinstance(pl, EnamlCoveragePlugin):
-        #         if not pl._coverage_enabled:
-        #             raise PluginDisabled()
 
     def append_config(self, option, value):
         """Append to a configuration option."""
@@ -97,15 +93,19 @@ class EnamlPluginTestCase(TestCase):
         self.assertEqual(
             executable,
             actual_executable,
-            "Executable lines aren't as expected: %r != %r" % (
-                executable, actual_executable,
+            "Executable lines aren't as expected: %r != %r"
+            % (
+                executable,
+                actual_executable,
             ),
         )
         self.assertEqual(
             missing or [],
             actual_missing,
-            "Missing lines aren't as expected: %r != %r" % (
-                missing, actual_missing,
+            "Missing lines aren't as expected: %r != %r"
+            % (
+                missing,
+                actual_missing,
             ),
         )
 
@@ -142,14 +142,12 @@ class EnamlPluginTestCase(TestCase):
             "Coverage.py warning: "
             "Disabling plugin 'enaml_coverage_plugin.EnamlCoveragePlugin' "
             "due to an exception:",
-            stderr
+            stderr,
         )
-        self.assertIn(
-            "EnamlCoveragePluginException: " + msg,
-            stderr
-        )
+        self.assertIn("EnamlCoveragePluginException: " + msg, stderr)
 
 
 class PluginDisabled(Exception):
     """Raised if we find that our plugin has been disabled."""
+
     pass

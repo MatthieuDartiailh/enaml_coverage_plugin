@@ -68,12 +68,10 @@ class EnamlByteParser(ByteParser):
 class EnamlParser(PythonParser):
     """Enaml parser analyser based on a custom arc analysis."""
 
-    _byte_parser: Optional[EnamlByteParser]
-
     @property
     def byte_parser(self) -> EnamlByteParser:
         """Create a ByteParser on demand."""
-        if not self._byte_parser:
+        if not hasattr(self, "_byte_parser"):
             self._byte_parser = EnamlByteParser(self.text, filename=self.filename)
         return self._byte_parser
 
@@ -101,6 +99,10 @@ class EnamlParser(PythonParser):
         ignore = self.excluded | self.raw_docstrings
         starts = self.raw_statements - ignore
         self.statements = self.first_lines(starts) - ignore
+
+    # --- Private API
+
+    _byte_parser: Optional[EnamlByteParser]
 
     def _raw_parse(self) -> None:
         """Parse the source to find the interesting facts about its lines.
