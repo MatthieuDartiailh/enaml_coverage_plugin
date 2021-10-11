@@ -68,10 +68,14 @@ class EnamlByteParser(ByteParser):
 class EnamlParser(PythonParser):
     """Enaml parser analyser based on a custom arc analysis."""
 
+    def __init__(self, text=None, filename=None, exclude=None):
+        super().__init__(text=text, filename=filename, exclude=exclude)
+        self._byte_parser = None
+
     @property
     def byte_parser(self) -> EnamlByteParser:
         """Create a ByteParser on demand."""
-        if not hasattr(self, "_byte_parser"):
+        if self._byte_parser is None:
             self._byte_parser = EnamlByteParser(self.text, filename=self.filename)
         return self._byte_parser
 
