@@ -36,7 +36,6 @@ dynamic=["version"]
 
 [project.urls]
 homepage = "https://github.com/MatthieuDartiailh/enaml_coverage_plugin"
-documentation = "https://enaml.readthedocs.io/en/latest/"
 repository = "https://github.com/MatthieuDartiailh/enaml_coverage_plugin"
 changelog = "https://github.com/MatthieuDartiailh/enaml_coverage_plugin/blob/main/releasenotes.rst"
 
