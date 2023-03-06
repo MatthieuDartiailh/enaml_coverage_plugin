@@ -1,6 +1,12 @@
 Enaml Coverage plugin Release Notes
 ===================================
 
+0.2.0 - unreleased
+------------------
+
+- update installation mechanism
+- support enaml >=0.16.0 (previous version are not supported anymore)
+
 0.1.1 - 11/10/2021
 ------------------
 
