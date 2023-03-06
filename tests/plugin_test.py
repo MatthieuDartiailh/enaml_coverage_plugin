@@ -11,11 +11,9 @@
 import contextlib
 import os
 import os.path
-
 from unittest import TestCase
 
 import coverage
-
 from enaml.application import Application
 
 from enaml_coverage_plugin.plugin import EnamlCoveragePlugin

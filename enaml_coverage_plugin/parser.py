@@ -9,9 +9,10 @@
 
 """
 import collections
+import io
 import os
-import sys
 import types
+from tokenize import generate_tokens
 from typing import Dict, List, Optional, Set, Tuple, Union
 
 from atom.api import Typed
@@ -24,17 +25,9 @@ from coverage.parser import (
     PythonParser,
     TryBlock,
 )
-from coverage.phystokens import neuter_encoding_declaration
 from enaml.core.enaml_ast import ASTVisitor, PythonModule
 from enaml.core.enaml_compiler import EnamlCompiler
 from enaml.core.parser import parse
-
-if sys.version_info >= (3, 7):
-    from enaml.core.parser.lexer3 import Python37EnamlLexer
-
-    lexer = Python37EnamlLexer()
-else:
-    raise Exception("Unsupported Python version")
 
 
 class NotEnaml(NotPython):
@@ -88,7 +81,7 @@ class EnamlParser(PythonParser):
         """
         try:
             self._raw_parse()
-        except (IndentationError) as err:
+        except IndentationError as err:
             if hasattr(err, "lineno"):
                 lineno = err.lineno  # IndentationError
             else:
@@ -124,32 +117,34 @@ class EnamlParser(PythonParser):
         exclude_indent = 0
         excluding = False
         excluding_decorators = False
-        prev_toktype = lexer.indent(1)
+        prev_toktype: str = "INDENT"
         first_line = None
         empty = True
         first_on_line = True
-        operators = {op[1] for op in lexer.operators}
 
-        def generate_tokens(text):
+        def _generate_tokens(text):
             """Use enaml lexer to generate the tokens."""
-            lexer.input(text)
+            tok_gen = generate_tokens(io.StringIO(text).readline)
             while True:
-                tok = lexer.token()
-                length = 0
-                if tok is None:
+                try:
+                    tok = next(tok_gen)
+                except StopIteration:
                     break
-                if tok.type == "STRING":
-                    # HINT use a string when counting to avoid encoding issues.
-                    length = tok.value.count(str("\n"))
-                yield (
-                    tok.type,
-                    tok.value,
-                    (tok.lineno, 0),
-                    (tok.lineno + length, 0),
-                    "",
-                )
+                # Resynthesize the :: and := operators from enaml
+                if tok.string == ":":
+                    n_tok = next(tok_gen)
+                    if n_tok.string in (":", "=") and tok.end == n_tok.start:
+                        yield (
+                            tok.type,
+                            tok.string + n_tok.string,
+                            tok.start,
+                            n_tok.end,
+                            tok.line,
+                        )
+                else:
+                    yield tok
 
-        tokgen = generate_tokens(self.text)
+        tokgen = _generate_tokens(self.text)
         for toktype, ttext, (slineno, _), (elineno, _), ltext in tokgen:
             if self.show_tokens:  # pragma: not covered
                 print(
@@ -167,7 +162,7 @@ class EnamlParser(PythonParser):
                     # we need to exclude them.  The simplest way is to note the
                     # lines with the 'class' keyword.
                     self.raw_classdefs.add(slineno)
-            elif toktype in operators:
+            elif toktype == "OPERATOR":
                 if ttext == ":":
                     should_exclude = (
                         elineno in self.raw_excluded
@@ -247,7 +242,7 @@ class EnamlASTArcAnalyser(AstArcAnalyzer):
     """Custom ast analyser modified to handle enaml ast."""
 
     def __init__(self, text: str, statements: set, multiline) -> None:
-        self.root_node = parse(neuter_encoding_declaration(text))
+        self.root_node = parse(text)
         self.statements = set(
             multiline.get(line_number, line_number) for line_number in statements
         )
