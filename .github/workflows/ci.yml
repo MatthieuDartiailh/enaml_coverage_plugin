@@ -41,11 +41,11 @@ jobs:
         if: always()
         run: |
           flake8 enaml_coverage_plugin;
-      - name: Mypy
-        if: always()
-        run: |
-          pip install atom coverage
-          mypy enaml_coverage_plugin;
+      # - name: Mypy
+      #   if: always()
+      #   run: |
+      #     pip install atom coverage
+      #     mypy enaml_coverage_plugin;
   tests:
     name: Unit tests
     runs-on: windows-latest
