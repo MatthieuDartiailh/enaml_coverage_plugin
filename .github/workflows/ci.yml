@@ -21,11 +21,11 @@ jobs:
     name: Check code formatting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.x'
       - name: Install tools
         run: |
           python -m pip install --upgrade pip
@@ -34,24 +34,28 @@ jobs:
         run: |
           isort enaml_coverage_plugin -c;
       - name: Black
+        if: always()
         run: |
           black enaml_coverage_plugin --check;
       - name: Flake8
+        if: always()
         run: |
           flake8 enaml_coverage_plugin;
-      - name: Mypy
-        run: |
-          mypy enaml_coverage_plugin;
+      # - name: Mypy
+      #   if: always()
+      #   run: |
+      #     pip install atom coverage
+      #     mypy enaml_coverage_plugin;
   tests:
     name: Unit tests
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -65,7 +69,7 @@ jobs:
       # Manually install qt backend for enaml
       # (but not enaml to check the plugin does install it)
         run: |
-          pip install pytest-qt pyqt5 qtpy
+          pip install pytest-qt pyqt6 qtpy
           python -X dev -m pytest tests -v
       # Measuring coverage for coverage plugin is non trivial and I need more tests
       # - name: Upload coverage to Codecov

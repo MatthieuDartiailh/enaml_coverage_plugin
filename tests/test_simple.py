@@ -12,11 +12,10 @@ import pathlib
 
 import coverage
 import enaml
-from enaml.core.parser import parse
 from enaml.core.enaml_compiler import EnamlCompiler
+from enaml.core.parser import parse
 from enaml.qt.qt_application import QtApplication
 from enaml.widgets.api import Window
-
 from plugin_test import EnamlPluginTestCase
 
 
@@ -26,7 +25,6 @@ def process_app_events():
 
     """
     qapp = QtApplication.instance()._qapp
-    qapp.flush()
     qapp.processEvents()
     qapp.sendPostedEvents()
 
@@ -35,7 +33,6 @@ def process_app_events():
 # TODO clean module after test so that we truly import it each time
 # TODO find a way to access the main object config.
 class TestSimpleEnaml(EnamlPluginTestCase):
-
     def load_module_main(self, module_name: str) -> Window:
         path = pathlib.Path(__file__).parent / "data" / module_name
         with open(path) as f:
@@ -83,9 +80,7 @@ class TestSimpleEnaml(EnamlPluginTestCase):
         executed = self.get_line_data("tests/data/test_simple.enaml")
         print("executable_lines: %s" % ex)
         print("missed lines: %s" % missed)
-        print(
-            "executed lines: %s" % self.get_line_data("tests/data/test_simple.enaml")
-        )
+        print("executed lines: %s" % self.get_line_data("tests/data/test_simple.enaml"))
         assert set(ex) == (set(missed) | set(executed))
         for l in (25, 31, 32, 34):  # FIXME 35 should be in but is not
             assert l in missed
@@ -107,7 +102,5 @@ class TestSimpleEnaml(EnamlPluginTestCase):
         ex, missed = self.get_analysis("tests/data/test_simple.enaml")
         print("executable_lines: %s" % ex)
         print("missed lines: %s" % missed)
-        print(
-            "executed lines: %s" % self.get_line_data("tests/data/test_simple.enaml")
-        )
+        print("executed lines: %s" % self.get_line_data("tests/data/test_simple.enaml"))
         assert not missed

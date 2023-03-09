@@ -26,7 +26,6 @@ class EnamlFileReporter(FileReporter):
     """Enaml file reporter."""
 
     def __init__(self, morf):
-
         if hasattr(morf, "__file__"):
             filename = morf.__file__
         elif isinstance(morf, types.ModuleType):
