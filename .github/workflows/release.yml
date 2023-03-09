@@ -28,7 +28,7 @@ jobs:
       - name: Test sdist
         run: |
           pip install dist/*.tar.gz
-          pip install pytest-qt pyqt5 qtpy
+          pip install pytest-qt pyqt6 qtpy
           python -X dev -m pytest tests -v
       - name: Store artifacts
         uses: actions/upload-artifact@v3
@@ -56,7 +56,7 @@ jobs:
       - name: Test wheel
         run: |
           pip install dist/*.whl
-          pip install pytest-qt pyqt5 qtpy
+          pip install pytest-qt pyqt6 qtpy
           python -X dev -m pytest tests -v
       - name: Store artifacts
         uses: actions/upload-artifact@v3
