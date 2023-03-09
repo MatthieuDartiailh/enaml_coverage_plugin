@@ -58,6 +58,34 @@ class EnamlByteParser(ByteParser):
                 )
 
 
+def _generate_tokens(text):
+    """Use enaml lexer to generate tokens.
+
+    Enaml now uses tokenize internally but we manually reconstruct the
+    :: and => tokens which are not native Python tokens.
+
+    """
+    tok_gen = generate_tokens(io.StringIO(text).readline)
+    while True:
+        try:
+            tok = next(tok_gen)
+        except StopIteration:
+            break
+        # Resynthesize the :: and := operators from enaml
+        if tok.string == ":":
+            n_tok = next(tok_gen)
+            if n_tok.string in (":", "=") and tok.end == n_tok.start:
+                yield (
+                    tok.type,
+                    tok.string + n_tok.string,
+                    tok.start,
+                    n_tok.end,
+                    tok.line,
+                )
+        else:
+            yield tok
+
+
 class EnamlParser(PythonParser):
     """Enaml parser analyser based on a custom arc analysis."""
 
@@ -121,28 +149,6 @@ class EnamlParser(PythonParser):
         first_line = None
         empty = True
         first_on_line = True
-
-        def _generate_tokens(text):
-            """Use enaml lexer to generate the tokens."""
-            tok_gen = generate_tokens(io.StringIO(text).readline)
-            while True:
-                try:
-                    tok = next(tok_gen)
-                except StopIteration:
-                    break
-                # Resynthesize the :: and := operators from enaml
-                if tok.string == ":":
-                    n_tok = next(tok_gen)
-                    if n_tok.string in (":", "=") and tok.end == n_tok.start:
-                        yield (
-                            tok.type,
-                            tok.string + n_tok.string,
-                            tok.start,
-                            n_tok.end,
-                            tok.line,
-                        )
-                else:
-                    yield tok
 
         tokgen = _generate_tokens(self.text)
         for toktype, ttext, (slineno, _), (elineno, _), ltext in tokgen:
