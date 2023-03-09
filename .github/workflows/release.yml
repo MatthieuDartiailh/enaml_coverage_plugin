@@ -10,7 +10,8 @@ on:
 jobs:
   build_sdist:
     name: Build sdist
-    runs-on: ubuntu-latest
+    # Run on windows since we need Qt to actually test things for the time being
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,8 +28,8 @@ jobs:
           python -m build . -s
       - name: Test sdist
         run: |
-          pip install dist/*.tar.gz
-          pip install pytest-qt pyqt5 qtpy
+          pip install --find-links=dist enaml_coverage_plugin
+          pip install pytest-qt pyqt6 qtpy
           python -X dev -m pytest tests -v
       - name: Store artifacts
         uses: actions/upload-artifact@v3
@@ -38,7 +39,7 @@ jobs:
 
   build_wheel:
     name: Build wheel
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -55,8 +56,8 @@ jobs:
           python -m build . -w
       - name: Test wheel
         run: |
-          pip install dist/*.whl
-          pip install pytest-qt pyqt5 qtpy
+          pip install --find-links=dist enaml_coverage_plugin
+          pip install pytest-qt pyqt6 qtpy
           python -X dev -m pytest tests -v
       - name: Store artifacts
         uses: actions/upload-artifact@v3
