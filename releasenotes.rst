@@ -1,7 +1,7 @@
 Enaml Coverage plugin Release Notes
 ===================================
 
-0.2.0 - unreleased
+0.2.0 - 09/03/2023
 ------------------
 
 - update installation mechanism
