@@ -10,7 +10,8 @@ on:
 jobs:
   build_sdist:
     name: Build sdist
-    runs-on: ubuntu-latest
+    # Run on windows since we need Qt to actually test things for the time being
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -38,7 +39,7 @@ jobs:
 
   build_wheel:
     name: Build wheel
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
