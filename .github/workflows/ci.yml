@@ -44,6 +44,7 @@ jobs:
       - name: Mypy
         if: always()
         run: |
+          pip install atom coverage
           mypy enaml_coverage_plugin;
   tests:
     name: Unit tests
